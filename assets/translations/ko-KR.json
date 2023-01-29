@@ -1,0 +1,16 @@
+{
+  "navItem1": "코스",
+  "navItem2": "트래킹",
+  "navItem3": "인증서",
+  "navItem4": "더보기",
+  "courseSelect1": "경기 제1코스",
+  "courseSelect2": "경기 제2코스",
+  "courseSelect3": "경기 제3코스",
+  "courseSelect4": "경기 제4코스",
+  "courseSelect5": "경기 제5코스",
+  "courseSelect6": "경기 제6코스",
+  "courseSelect7": "경기 제7코스",
+  "courseSelect8": "경기 제8코스",
+  "goTracking": "트래킹 하러 가기",
+  "stopTracking": "트래킹 그만 하기"
+}

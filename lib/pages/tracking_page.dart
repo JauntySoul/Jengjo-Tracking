@@ -13,59 +13,34 @@ class TrackingPage extends StatefulWidget {
 }
 
 class _TrackingPageState extends State<TrackingPage> {
-  StreamController<String> streamController = StreamController<String>();
-
   final Completer<GoogleMapController> _googleMapController =
       Completer<GoogleMapController>();
-
-  static const CameraPosition _initialCameraPosition = CameraPosition(
-    target: LatLng(36.51144636892763, 127.83505205195452),
-    zoom: 7,
-  );
+  LocationData? currentLocation;
 
   @override
   void initState() {
-    Future.delayed(Duration.zero, () async {
-      streamController.add(await turnedGPS());
-    });
-    streamController.stream.listen((event) {
-      getGPS();
-    });
+    getCurrentLocation();
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder(
-      stream: streamController.stream,
+    return FutureBuilder(
+      future: turnedGPS(),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           if (snapshot.data == 'gps') {
-            print('GPS ON/OFF 확인');
+            // TODO: GPS ON/OFF
           } else if (snapshot.data == 'permission') {
-            print('위치 권한 확인');
-          } else {
-            print(snapshot.data);
+            // TODO: Permission
+          } else if (snapshot.data == 'normal') {
+            return googleMap();
           }
         }
-
-        return Scaffold(
-          body: GoogleMap(
-            mapType: MapType.normal,
-            initialCameraPosition: _initialCameraPosition,
-            onMapCreated: (GoogleMapController controller) {
-              _googleMapController.complete(controller);
-            },
-          ),
-        );
+        return const CircularProgressIndicator();
       },
     );
   }
-
-  // Future<void> _goToTheLake() async {
-  //   final GoogleMapController controller = await _controller.future;
-  //   controller.animateCamera(CameraUpdate.newCameraPosition(_kLake));
-  // }
 
   Future<String> turnedGPS() async {
     Location location = Location();
@@ -88,11 +63,53 @@ class _TrackingPageState extends State<TrackingPage> {
       }
     }
 
+    currentLocation = await location.getLocation();
     return 'normal';
   }
 
-  getGPS() async {
+  Widget googleMap() {
+    return GoogleMap(
+      initialCameraPosition: CameraPosition(
+        target: LatLng(currentLocation!.latitude!, currentLocation!.longitude!),
+        zoom: 13.5,
+      ),
+      markers: {
+        Marker(
+          markerId: const MarkerId("currentLocation"),
+          position:
+              LatLng(currentLocation!.latitude!, currentLocation!.longitude!),
+        ),
+      },
+      onMapCreated: (mapController) {
+        _googleMapController.complete(mapController);
+      },
+    );
+  }
+
+  void getCurrentLocation() async {
     Location location = Location();
-    return await location.getLocation();
+    location.getLocation().then(
+      (location) {
+        currentLocation = location;
+      },
+    );
+    GoogleMapController googleMapController = await _googleMapController.future;
+    location.onLocationChanged.listen(
+      (newLoc) {
+        currentLocation = newLoc;
+        googleMapController.animateCamera(
+          CameraUpdate.newCameraPosition(
+            CameraPosition(
+              zoom: 13.5,
+              target: LatLng(
+                newLoc.latitude!,
+                newLoc.longitude!,
+              ),
+            ),
+          ),
+        );
+        setState(() {});
+      },
+    );
   }
 }

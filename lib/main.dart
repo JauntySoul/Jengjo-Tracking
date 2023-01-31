@@ -14,7 +14,7 @@ import 'package:jeongjo_tracking/pages/tracking_page.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
-  await dotenv.load(fileName: 'config/.env');
+  await dotenv.load(fileName: 'assets/config/.env');
 
   runApp(EasyLocalization(
       supportedLocales: const [Locale('en', 'US'), Locale('ko', 'KR')],

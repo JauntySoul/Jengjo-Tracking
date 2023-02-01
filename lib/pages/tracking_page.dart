@@ -18,8 +18,9 @@ class _TrackingPageState extends State<TrackingPage> {
   final Completer<GoogleMapController> _googleMapController =
       Completer<GoogleMapController>();
   LatLng? currentLocation;
-  CameraPosition currentCameraPosition =
-      const CameraPosition(target: LatLng(0.0, 0.0), zoom: 15);
+  LatLng currentCameraTarget =
+      const LatLng(36.51144636892763, 127.83505205195452);
+  double currentCameraZoom = 17;
   bool whetherCameraIsFixed = true;
 
   @override
@@ -79,29 +80,29 @@ class _TrackingPageState extends State<TrackingPage> {
       children: [
         GoogleMap(
           initialCameraPosition: CameraPosition(
-            target: currentLocation!,
-            zoom: 15,
+            target: currentCameraTarget,
+            zoom: currentCameraZoom,
           ),
           onMapCreated: (mapController) {
             _googleMapController.complete(mapController);
           },
-          gestureRecognizers: Set()
-            ..add(Factory<DragGestureRecognizer>(
-                () => MyDragGestureRecognizer(() {
-                      if (whetherCameraIsFixed) {
-                        setState(() {
-                          whetherCameraIsFixed = false;
-                        });
-                      }
-                    }))),
+          gestureRecognizers: {
+            Factory<DragGestureRecognizer>(() => MyDragGestureRecognizer(() {
+                  if (whetherCameraIsFixed) {
+                    setState(() {
+                      whetherCameraIsFixed = false;
+                    });
+                  }
+                }))
+          },
           rotateGesturesEnabled: false,
           zoomControlsEnabled: false,
           tiltGesturesEnabled: false,
-          myLocationEnabled: false,
+          myLocationEnabled: true,
           myLocationButtonEnabled: false,
           // TODO: 마커 폴리곤 폴리라인 서클
           onCameraMove: (position) {
-            currentCameraPosition = position;
+            currentCameraTarget = position.target;
           },
         ),
         Align(
@@ -117,10 +118,7 @@ class _TrackingPageState extends State<TrackingPage> {
                   child: ElevatedButton(
                     onPressed: () {
                       whetherCameraIsFixed = !whetherCameraIsFixed;
-                      currentCameraPosition = CameraPosition(
-                        target: currentCameraPosition.target,
-                        zoom: 17,
-                      );
+                      currentCameraZoom = 17;
                       setState(() {});
                     },
                     style: ElevatedButton.styleFrom(
@@ -202,7 +200,6 @@ class _TrackingPageState extends State<TrackingPage> {
         if (whetherCameraIsFixed) {
           cameraFixed();
         }
-        setState(() {});
       },
     );
   }
@@ -213,7 +210,7 @@ class _TrackingPageState extends State<TrackingPage> {
       CameraUpdate.newCameraPosition(
         CameraPosition(
           target: currentLocation!,
-          zoom: currentCameraPosition.zoom,
+          zoom: currentCameraZoom,
         ),
       ),
     );
@@ -221,25 +218,20 @@ class _TrackingPageState extends State<TrackingPage> {
 
   void cameraZoom(String operator) async {
     GoogleMapController googleMapController = await _googleMapController.future;
-    double currentCameraZoomValue = currentCameraPosition.zoom;
-    double cameraZoomValueBeChanged = 17;
+    double realCameraZoom = await googleMapController.getZoomLevel();
 
     if (operator == 'plus') {
-      cameraZoomValueBeChanged =
-          currentCameraZoomValue + (0.5 - (currentCameraZoomValue % 0.5));
-    } else if (operator == 'minus' && currentCameraZoomValue != 0.0) {
-      if (currentCameraZoomValue % 0.5 == 0) {
-        cameraZoomValueBeChanged = currentCameraZoomValue - 0.5;
+      currentCameraZoom = realCameraZoom + (0.5 - (realCameraZoom % 0.5));
+    } else if (operator == 'minus') {
+      if (realCameraZoom % 0.5 == 0) {
+        currentCameraZoom = realCameraZoom - 0.5;
       } else {
-        cameraZoomValueBeChanged =
-            currentCameraZoomValue - (currentCameraZoomValue % 0.5);
+        currentCameraZoom = realCameraZoom - (realCameraZoom % 0.5);
       }
     }
 
-    googleMapController.animateCamera(CameraUpdate.newCameraPosition(
-        CameraPosition(
-            target: currentCameraPosition.target,
-            zoom: cameraZoomValueBeChanged)));
+    googleMapController.moveCamera(CameraUpdate.newCameraPosition(
+        CameraPosition(target: currentCameraTarget, zoom: currentCameraZoom)));
   }
 }
 

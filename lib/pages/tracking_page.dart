@@ -99,6 +99,7 @@ class _TrackingPageState extends State<TrackingPage> {
           tiltGesturesEnabled: false,
           myLocationEnabled: false,
           myLocationButtonEnabled: false,
+          // TODO: 마커 폴리곤 폴리라인 서클
           onCameraMove: (position) {
             currentCameraPosition = position;
           },

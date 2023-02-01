@@ -1,4 +1,4 @@
-#Tue Jan 31 12:37:00 KST 2023
+#Wed Feb 01 18:38:26 KST 2023
 base.0=/Users/joosunkim/programming/jeongjo_tracking/build/app/intermediates/dex/debug/mergeDexDebug/classes.dex
 renamed.0=classes.dex
 path.0=classes.dex

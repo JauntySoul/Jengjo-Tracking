@@ -35,9 +35,9 @@ class CourseInfoPage extends StatelessWidget {
           padding: const EdgeInsets.all(10.0),
           child: ElevatedButton(
             onPressed: () {
-              selectedIndexGlobal = 1;
               selectedCourseGlobal =
                   selectedCourseGlobal != courseName ? courseName : '';
+              selectedIndexGlobal = selectedCourseGlobal == '' ? 0 : 1;
               Navigator.pushReplacement(context,
                   MaterialPageRoute(builder: (context) => const MyHomePage()));
             },

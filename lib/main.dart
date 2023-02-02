@@ -1,6 +1,11 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import 'package:jeongjo_tracking/pages/certificate_page.dart';
 import 'package:jeongjo_tracking/pages/course_select_page.dart';
@@ -15,6 +20,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
   await dotenv.load(fileName: 'assets/config/.env');
+  initUserInfo();
 
   runApp(EasyLocalization(
       supportedLocales: const [Locale('en', 'US'), Locale('ko', 'KR')],
@@ -23,8 +29,10 @@ void main() async {
       child: const MyApp()));
 }
 
+FlutterSecureStorage storage = const FlutterSecureStorage();
 int selectedIndexGlobal = 0;
 String selectedCourseGlobal = '';
+Map stampStatusGlobal = {};
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -97,4 +105,14 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
     );
   }
+}
+
+void initUserInfo() async {
+  Map savedStampStatus = await storage.readAll();
+  bool checkLatest = false;
+  List courseList = jsonDecode(
+      await rootBundle.loadString('assets/json/courseList.json'))['list'];
+  List spotList;
+
+  for (var element in courseList) {}
 }

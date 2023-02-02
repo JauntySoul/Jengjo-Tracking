@@ -1,0 +1,22 @@
+{
+  "spot": [
+    {
+      "name": "firstSpotName",
+      "explain": "firstSpotExplain",
+      "lat": 37.41154245487926,
+      "lng": 126.90269927725491
+    },
+    {
+      "name": "secondSpotName",
+      "explain": "secondSpotExplain",
+      "lat": 37.41978223621542,
+      "lng": 126.90829187202856
+    },
+    {
+      "name": "thirdSpotName",
+      "explain": "thirdSpotExplain",
+      "lat": 37.43027663498635,
+      "lng": 126.90518329296168
+    }
+  ]
+}

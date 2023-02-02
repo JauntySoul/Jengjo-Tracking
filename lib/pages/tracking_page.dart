@@ -1,10 +1,15 @@
 import 'dart:async';
+import 'dart:convert';
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
+
+import 'package:jeongjo_tracking/main.dart';
 
 class TrackingPage extends StatefulWidget {
   final String selectedCourse;
@@ -17,21 +22,25 @@ class TrackingPage extends StatefulWidget {
 class _TrackingPageState extends State<TrackingPage> {
   final Completer<GoogleMapController> _googleMapController =
       Completer<GoogleMapController>();
-  LatLng? currentLocation;
-  LatLng currentCameraTarget =
-      const LatLng(36.51144636892763, 127.83505205195452);
+  Location location = Location();
+  late StreamSubscription<LocationData> locationChangeListener;
+  LatLng currentLocation = const LatLng(36.511446, 127.835052);
+  LatLng currentCameraTarget = const LatLng(36.511446, 127.835052);
   double currentCameraZoom = 17;
   bool whetherCameraIsFixed = true;
+  Set<Marker> markers = {};
 
   @override
   void initState() {
-    getCurrentLocation();
+    initLocationChangeListener();
+    locationChangeListener.resume();
+    initMarker();
     super.initState();
   }
 
   @override
   void dispose() {
-    // TODO: implement dispose
+    locationChangeListener.cancel();
     super.dispose();
   }
 
@@ -52,33 +61,6 @@ class _TrackingPageState extends State<TrackingPage> {
         return const CircularProgressIndicator();
       },
     );
-  }
-
-  Future<String> turnedGPS() async {
-    Location location = Location();
-    bool serviceEnabled;
-    PermissionStatus permissionGranted;
-
-    serviceEnabled = await location.serviceEnabled();
-    if (!serviceEnabled) {
-      serviceEnabled = await location.requestService();
-      if (!serviceEnabled) {
-        return 'gps';
-      }
-    }
-
-    permissionGranted = await location.hasPermission();
-    if (permissionGranted == PermissionStatus.denied) {
-      permissionGranted = await location.requestPermission();
-      if (permissionGranted != PermissionStatus.granted) {
-        return 'permission';
-      }
-    }
-
-    LocationData currentLocationData = await location.getLocation();
-    currentLocation =
-        LatLng(currentLocationData.latitude!, currentLocationData.longitude!);
-    return 'normal';
   }
 
   Widget mapScreen() {
@@ -107,6 +89,7 @@ class _TrackingPageState extends State<TrackingPage> {
           myLocationEnabled: true,
           myLocationButtonEnabled: false,
           // TODO: 마커 폴리곤 폴리라인 서클
+          markers: markers,
           onCameraMove: (position) {
             currentCameraTarget = position.target;
           },
@@ -193,14 +176,34 @@ class _TrackingPageState extends State<TrackingPage> {
     );
   }
 
-  void getCurrentLocation() async {
-    Location location = Location();
-    location.getLocation().then(
-      (location) {
-        currentLocation = LatLng(location.latitude!, location.longitude!);
-      },
-    );
-    location.onLocationChanged.listen(
+  Future<String> turnedGPS() async {
+    bool serviceEnabled;
+    PermissionStatus permissionGranted;
+
+    serviceEnabled = await location.serviceEnabled();
+    if (!serviceEnabled) {
+      serviceEnabled = await location.requestService();
+      if (!serviceEnabled) {
+        return 'gps';
+      }
+    }
+
+    permissionGranted = await location.hasPermission();
+    if (permissionGranted == PermissionStatus.denied) {
+      permissionGranted = await location.requestPermission();
+      if (permissionGranted != PermissionStatus.granted) {
+        return 'permission';
+      }
+    }
+
+    LocationData currentLocationData = await location.getLocation();
+    currentLocation =
+        LatLng(currentLocationData.latitude!, currentLocationData.longitude!);
+    return 'normal';
+  }
+
+  void initLocationChangeListener() async {
+    locationChangeListener = location.onLocationChanged.listen(
       (newLoc) {
         currentLocation = LatLng(newLoc.latitude!, newLoc.longitude!);
         if (whetherCameraIsFixed) {
@@ -212,10 +215,10 @@ class _TrackingPageState extends State<TrackingPage> {
 
   void cameraFixed() async {
     GoogleMapController googleMapController = await _googleMapController.future;
-    googleMapController.animateCamera(
+    googleMapController.moveCamera(
       CameraUpdate.newCameraPosition(
         CameraPosition(
-          target: currentLocation!,
+          target: currentLocation,
           zoom: currentCameraZoom,
         ),
       ),
@@ -238,6 +241,63 @@ class _TrackingPageState extends State<TrackingPage> {
 
     googleMapController.moveCamera(CameraUpdate.newCameraPosition(
         CameraPosition(target: currentCameraTarget, zoom: currentCameraZoom)));
+  }
+
+  void initMarker() async {
+    String jsonPath = 'assets/json/${widget.selectedCourse}.json';
+    jsonPath = 'assets/json/tempCourse.json'; // TODO: 테스트 완료시 삭제
+    String jsonString = await rootBundle.loadString(jsonPath);
+    Map jsonResponse = jsonDecode(jsonString);
+
+    for (var element in jsonResponse['spot']) {
+      markers.add(Marker(
+        markerId: MarkerId(element['name']),
+        position: LatLng(element['lat'], element['lng']),
+        onTap: () {
+          markerDialog(element);
+        },
+        consumeTapEvents: true,
+      ));
+    }
+  }
+
+  void markerDialog(element) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Center(child: Text(element['name'].toString().tr())),
+          content: SizedBox(
+            width: 300,
+            height: 500,
+            child: Text(element['explain'].toString().tr()),
+          ),
+          actions: [
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {},
+                    child: Text('doStamp'.tr()),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 5),
+                  child: TextButton(
+                    onPressed: () {},
+                    child: Text('dialogClose'.tr()),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void temp() {
+    var t = storage.read(key: '');
   }
 }
 

@@ -1,5 +1,10 @@
 # This is a generated file; do not edit or check into version control.
 flutter_plugin_android_lifecycle=/Users/joosunkim/programming/flutter/.pub-cache/hosted/pub.dartlang.org/flutter_plugin_android_lifecycle-2.0.7/
+flutter_secure_storage=/Users/joosunkim/programming/flutter/.pub-cache/hosted/pub.dartlang.org/flutter_secure_storage-7.0.1/
+flutter_secure_storage_linux=/Users/joosunkim/programming/flutter/.pub-cache/hosted/pub.dartlang.org/flutter_secure_storage_linux-1.1.2/
+flutter_secure_storage_macos=/Users/joosunkim/programming/flutter/.pub-cache/hosted/pub.dartlang.org/flutter_secure_storage_macos-2.0.1/
+flutter_secure_storage_web=/Users/joosunkim/programming/flutter/.pub-cache/hosted/pub.dartlang.org/flutter_secure_storage_web-1.1.1/
+flutter_secure_storage_windows=/Users/joosunkim/programming/flutter/.pub-cache/hosted/pub.dartlang.org/flutter_secure_storage_windows-1.1.3/
 google_maps_flutter=/Users/joosunkim/programming/flutter/.pub-cache/hosted/pub.dartlang.org/google_maps_flutter-2.2.2/
 google_maps_flutter_android=/Users/joosunkim/programming/flutter/.pub-cache/hosted/pub.dartlang.org/google_maps_flutter_android-2.4.0/
 google_maps_flutter_ios=/Users/joosunkim/programming/flutter/.pub-cache/hosted/pub.dartlang.org/google_maps_flutter_ios-2.1.12/

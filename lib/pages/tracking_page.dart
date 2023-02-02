@@ -30,6 +30,12 @@ class _TrackingPageState extends State<TrackingPage> {
   }
 
   @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return FutureBuilder(
       future: turnedGPS(),
@@ -243,7 +249,7 @@ class MyDragGestureRecognizer extends DragGestureRecognizer {
   @override
   void resolve(GestureDisposition disposition) {
     super.resolve(disposition);
-    this.myDragGestureRecognizer();
+    myDragGestureRecognizer();
   }
 
   @override

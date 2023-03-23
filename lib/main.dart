@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -20,7 +19,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
   await dotenv.load(fileName: 'assets/config/.env');
-  initUserInfo();
+  initStampStatus();
 
   runApp(EasyLocalization(
       supportedLocales: const [Locale('en', 'US'), Locale('ko', 'KR')],
@@ -107,12 +106,26 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-void initUserInfo() async {
-  Map savedStampStatus = await storage.readAll();
-  bool checkLatest = false;
+void initStampStatus() async {
+  Map stampStatus = await storage.readAll();
   List courseList = jsonDecode(
       await rootBundle.loadString('assets/json/courseList.json'))['list'];
-  List spotList;
+  List compareList = [];
 
-  for (var element in courseList) {}
+  for (var element in courseList) {
+    List spotList = jsonDecode(
+        await rootBundle.loadString('assets/json/$element.json'))['spot'];
+    for (var element in spotList) {
+      compareList.add(element['name']);
+    }
+  }
+
+  for (var element in compareList) {
+    if (!stampStatus.containsKey(element)) {
+      stampStatus[element] = 'false';
+      await storage.write(key: element, value: 'false');
+    }
+  }
+
+  stampStatusGlobal = stampStatus;
 }

@@ -244,20 +244,26 @@ class _TrackingPageState extends State<TrackingPage> {
   }
 
   void initMarker() async {
-    String jsonPath = 'assets/json/${widget.selectedCourse}.json';
-    jsonPath = 'assets/json/tempCourse.json'; // TODO: 테스트 완료시 삭제
-    String jsonString = await rootBundle.loadString(jsonPath);
-    Map jsonResponse = jsonDecode(jsonString);
+    List courseList = jsonDecode(
+        await rootBundle.loadString('assets/json/courseList.json'))['list'];
+    List spotList = [];
 
-    for (var element in jsonResponse['spot']) {
-      markers.add(Marker(
-        markerId: MarkerId(element['name']),
-        position: LatLng(element['lat'], element['lng']),
-        onTap: () {
-          markerDialog(element);
-        },
-        consumeTapEvents: true,
-      ));
+    for (var element in courseList) {
+      spotList.add(jsonDecode(
+          await rootBundle.loadString('assets/json/$element.json'))['spot']);
+    }
+
+    for (var i in spotList) {
+      for (var j in i) {
+        markers.add(Marker(
+          markerId: MarkerId(j['name']),
+          position: LatLng(j['lat'], j['lng']),
+          onTap: () {
+            markerDialog(j);
+          },
+          consumeTapEvents: true,
+        ));
+      }
     }
   }
 
@@ -265,39 +271,59 @@ class _TrackingPageState extends State<TrackingPage> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: Center(child: Text(element['name'].toString().tr())),
-          content: SizedBox(
-            width: 300,
-            height: 500,
-            child: Text(element['explain'].toString().tr()),
-          ),
-          actions: [
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {},
-                    child: Text('doStamp'.tr()),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 5),
-                  child: TextButton(
-                    onPressed: () {},
-                    child: Text('dialogClose'.tr()),
-                  ),
-                ),
-              ],
+        Color buttonColor = stampStatusGlobal['${element['name']}'] == 'false'
+            ? Colors.blue
+            : Colors.red;
+        String buttonText = stampStatusGlobal['${element['name']}'] == 'false'
+            ? 'doStamp'.tr()
+            : 'alreadyStamp'.tr();
+        return StatefulBuilder(builder: (context, setState) {
+          return AlertDialog(
+            title: Center(child: Text(element['name'].toString().tr())),
+            content: SizedBox(
+              width: 300,
+              height: 500,
+              child: Text(element['explain'].toString().tr()),
             ),
-          ],
-        );
+            actions: [
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        if (stampStatusGlobal['${element['name']}'] ==
+                            'false') {
+                          stampStatusGlobal['${element['name']}'] = 'true';
+                          await storage.write(
+                              key: element['name'], value: 'true');
+                          setState(() {
+                            buttonColor = Colors.red;
+                            buttonText = 'alreadyStamp'.tr();
+                          });
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: buttonColor,
+                      ),
+                      child: Text(buttonText),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 5),
+                    child: TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: Text('dialogClose'.tr()),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          );
+        });
       },
     );
-  }
-
-  void temp() {
-    var t = storage.read(key: '');
   }
 }
 
